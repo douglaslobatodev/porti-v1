@@ -1,3 +1,11 @@
+const EMAILJS_PUBLIC_KEY = "a17fs3rq5KK9E-4OB";
+const EMAILJS_SERVICE_ID = "service_ewjth6r";
+const EMAILJS_TEMPLATE_ID = "template_xtkq6xs";
+
+if (typeof emailjs !== "undefined") {
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const intro = document.getElementById("intro");
   const realSite = document.getElementById("real-site");
@@ -149,6 +157,63 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("scroll", updateActiveMenu);
   window.addEventListener("load", updateActiveMenu);
   window.addEventListener("resize", updateActiveMenu);
+
+  // ===============================
+  // 7. FORMULÁRIO DE CONTATO
+  // ===============================
+  const contactForm = document.getElementById("contact-form");
+  const formStatus = document.getElementById("form-status");
+
+  if (contactForm) {
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+
+    contactForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = contactForm.user_name.value.trim();
+      const email = contactForm.user_email.value.trim();
+      const message = contactForm.message.value.trim();
+
+      const subject = `Contato via portfólio - ${name}`;
+      const mailtoBody = `Nome: ${name}\nE-mail: ${email}\n\n${message}`;
+      const mailtoLink = `mailto:douglaslobato1803@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailtoBody)}`;
+
+      const fallbackToMailto = () => {
+        window.location.href = mailtoLink;
+        if (formStatus) {
+          formStatus.textContent = "Não foi possível enviar direto. Abrindo seu aplicativo de e-mail...";
+        }
+      };
+
+      if (typeof emailjs === "undefined") {
+        fallbackToMailto();
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (formStatus) formStatus.textContent = "Enviando mensagem...";
+
+      emailjs
+        .send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          name,
+          email,
+          message,
+          title: subject,
+          time: new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }),
+        })
+        .then(() => {
+          if (formStatus) formStatus.textContent = "Mensagem enviada com sucesso! Retorno em breve.";
+          contactForm.reset();
+        })
+        .catch((err) => {
+          console.error("EmailJS error:", err);
+          fallbackToMailto();
+        })
+        .finally(() => {
+          if (submitBtn) submitBtn.disabled = false;
+        });
+    });
+  }
 });
 
 // ===============================
