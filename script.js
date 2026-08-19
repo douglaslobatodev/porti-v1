@@ -7,12 +7,56 @@ emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+const navToggle = document.querySelector(".nav-toggle");
+const primaryNav = document.getElementById("primary-nav");
 const navLinks = document.querySelectorAll('.ul-list a[href^="#"]');
 const navItems = document.querySelectorAll(".ul-list li");
 const sections = document.querySelectorAll("main section[id]");
 
 initScrollAnimations();
 updateActiveMenu();
+
+// ===============================
+// 0. MENU MOBILE (HAMBÚRGUER)
+// ===============================
+function closeMobileMenu() {
+if (!navToggle || !primaryNav) return;
+primaryNav.classList.remove("open");
+navToggle.classList.remove("is-active");
+navToggle.setAttribute("aria-expanded", "false");
+document.body.classList.remove("nav-open");
+}
+
+function openMobileMenu() {
+if (!navToggle || !primaryNav) return;
+primaryNav.classList.add("open");
+navToggle.classList.add("is-active");
+navToggle.setAttribute("aria-expanded", "true");
+document.body.classList.add("nav-open");
+}
+
+if (navToggle && primaryNav) {
+navToggle.addEventListener("click", () => {
+if (primaryNav.classList.contains("open")) {
+closeMobileMenu();
+} else {
+openMobileMenu();
+}
+});
+
+document.addEventListener("keydown", (e) => {
+if (e.key === "Escape" && primaryNav.classList.contains("open")) {
+closeMobileMenu();
+navToggle.focus();
+}
+});
+
+document.addEventListener("click", (e) => {
+if (!primaryNav.classList.contains("open")) return;
+if (primaryNav.contains(e.target) || navToggle.contains(e.target)) return;
+closeMobileMenu();
+});
+}
 
 // ===============================
 // 1. SCROLL SUAVE
@@ -40,6 +84,7 @@ anchor.addEventListener("click", function (e) {
 e.preventDefault();
 
 const targetSelector = this.getAttribute("href");
+closeMobileMenu();
 if (!targetSelector) return;
 
 scrollToSection(targetSelector);
